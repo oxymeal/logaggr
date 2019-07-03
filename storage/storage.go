@@ -44,6 +44,11 @@ func (r *collectionReader) readLogLines() ([]LogLine, error) {
 		}
 		loglines = append(loglines, logline)
 	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
 	return loglines, nil
 }
 
