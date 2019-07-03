@@ -22,7 +22,20 @@ func newCollectionReader(reader io.Reader) *collectionReader {
 }
 
 func (r *collectionReader) readLogLine() (LogLine, error) {
-	return nil, nil
+	if !r.scanner.Scan() {
+		if err := r.scanner.Err(); err != nil {
+			return nil, err
+		}
+		return nil, io.EOF
+	}
+
+	var logline LogLine
+	line := r.scanner.Text()
+	err := json.Unmarshal([]byte(line), &logline)
+	if err != nil {
+		return nil, err
+	}
+	return logline, nil
 }
 
 func (r *collectionReader) readLogLines() ([]LogLine, error) {
