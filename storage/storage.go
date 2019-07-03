@@ -28,6 +28,10 @@ func (r *collectionReader) readLogLine() (LogLine, error) {
 	return nil, nil
 }
 
+func (r *collectionReader) readLogLines() ([]LogLine, error) {
+	return nil, nil
+}
+
 func appendLogLine(path string, line LogLine) error {
 	return nil
 }
