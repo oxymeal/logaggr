@@ -15,12 +15,12 @@ func TestReadLogLine(t *testing.T) {
 		"{\"a\": 1, \"b\": \"hello world\", \"c\": true}",
 		"{\"d\": [1, 2, 3], \"e\": {\"ee\": 1}}",
 	}, "\n")
-	reader := &collectionReader{strings.NewReader(collectionFile)}
+	reader := newCollectionReader(strings.NewReader(collectionFile))
 
 	line1, err := reader.readLogLine()
 	require.Nil(err)
 	require.Equal(LogLine{
-		"a": 1,
+		"a": 1.0,
 		"b": "hello world",
 		"c": true,
 	}, line1)
@@ -28,8 +28,8 @@ func TestReadLogLine(t *testing.T) {
 	line2, err := reader.readLogLine()
 	require.Nil(err)
 	require.Equal(LogLine{
-		"d": []int{1, 2, 3},
-		"e": map[string]interface{}{"ee": 1},
+		"d": []interface{}{1.0, 2.0, 3.0},
+		"e": map[string]interface{}{"ee": 1.0},
 	}, line2)
 
 	_, err = reader.readLogLine()
@@ -43,7 +43,7 @@ func TestReadLogLines(t *testing.T) {
 		"{\"a\": 1, \"b\": \"hello world\", \"c\": true}",
 		"{\"d\": [1, 2, 3], \"e\": {\"ee\": 1}}",
 	}, "\n")
-	reader := &collectionReader{strings.NewReader(collectionFile)}
+	reader := newCollectionReader(strings.NewReader(collectionFile))
 
 	lines, err := reader.readLogLines()
 	require.Nil(err)

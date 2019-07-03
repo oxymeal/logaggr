@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"io"
-	"os"
 )
 
 // LogLine is a single event from a logs collection.
@@ -13,17 +12,13 @@ type LogLine map[string]interface{}
 
 // collectionReader is reading and parsing a collection file line by line.
 type collectionReader struct {
-	reader io.Reader
+	scanner *bufio.Scanner
 }
 
-func newCollectionReader(path string) (*collectionReader, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, err
+func newCollectionReader(reader io.Reader) *collectionReader {
+	return &collectionReader{
+		scanner: bufio.NewScanner(reader),
 	}
-	defer f.Close()
-
-	return &collectionReader{reader: f}, nil
 }
 
 func (r *collectionReader) readLogLine() (LogLine, error) {
@@ -31,13 +26,10 @@ func (r *collectionReader) readLogLine() (LogLine, error) {
 }
 
 func (r *collectionReader) readLogLines() ([]LogLine, error) {
-	file := r.reader
-	scanner := bufio.NewScanner(file)
-
 	var loglines []LogLine
-	for scanner.Scan() {
+	for r.scanner.Scan() {
 		var logline LogLine
-		line := scanner.Text()
+		line := r.scanner.Text()
 		err := json.Unmarshal([]byte(line), &logline)
 		if err != nil {
 			return nil, err
@@ -45,7 +37,7 @@ func (r *collectionReader) readLogLines() ([]LogLine, error) {
 		loglines = append(loglines, logline)
 	}
 
-	if err := scanner.Err(); err != nil {
+	if err := r.scanner.Err(); err != nil {
 		return nil, err
 	}
 
