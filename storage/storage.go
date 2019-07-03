@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"bufio"
+	"encoding/json"
 	"io"
 	"os"
 )
@@ -29,7 +31,20 @@ func (r *collectionReader) readLogLine() (LogLine, error) {
 }
 
 func (r *collectionReader) readLogLines() ([]LogLine, error) {
-	return nil, nil
+	file := r.reader
+	scanner := bufio.NewScanner(file)
+
+	var loglines []LogLine
+	for scanner.Scan() {
+		var logline LogLine
+		line := scanner.Text()
+		err := json.Unmarshal([]byte(line), &logline)
+		if err != nil {
+			return nil, err
+		}
+		loglines = append(loglines, logline)
+	}
+	return loglines, nil
 }
 
 func appendLogLine(path string, line LogLine) error {

@@ -49,12 +49,12 @@ func TestReadLogLines(t *testing.T) {
 	require.Nil(err)
 	require.Len(lines, 2)
 	require.Equal(LogLine{
-		"a": 1,
+		"a": 1.0,
 		"b": "hello world",
 		"c": true,
 	}, lines[0])
 	require.Equal(LogLine{
-		"d": []int{1, 2, 3},
-		"e": map[string]interface{}{"ee": 1},
+		"d": []interface{}{1.0, 2.0, 3.0},
+		"e": map[string]interface{}{"ee": 1.0},
 	}, lines[1])
 }
