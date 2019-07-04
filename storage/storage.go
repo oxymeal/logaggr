@@ -73,5 +73,8 @@ func appendLogLine(path string, line LogLine) error {
 	if _, err = file.Write(jsonString); err != nil {
 		return err
 	}
+	if _, err = file.Write([]byte("\n")); err != nil {
+		return err
+	}
 	return nil
 }

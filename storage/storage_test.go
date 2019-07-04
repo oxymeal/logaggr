@@ -1,9 +1,10 @@
 package storage
 
 import (
-	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
@@ -69,6 +70,7 @@ func TestAppendLogLine(t *testing.T) {
 	require.Nil(err)
 
 	path := file.Name()
+	fmt.Println(path)
 	err = file.Close()
 	require.Nil(err)
 
@@ -80,17 +82,31 @@ func TestAppendLogLine(t *testing.T) {
 	})
 	require.Nil(err)
 
-	// Read the file again
-	content, err := ioutil.ReadFile(path)
+	err = appendLogLine(path, LogLine{
+		"a": 2.0,
+		"b": "second line",
+		"c": false,
+	})
 	require.Nil(err)
 
-	// Assert that its content equals appendLogLine argument
-	var logLine LogLine
-	err = json.Unmarshal(content, &logLine)
+	// Call appendLogLine
+	file, err = os.Open(path)
 	require.Nil(err)
+	defer file.Close()
+
+	reader := newCollectionReader(file)
+	lines, err := reader.readLogLines()
+	require.Nil(err)
+
+	require.Len(lines, 2)
 	require.Equal(LogLine{
 		"a": 1.0,
 		"b": "hello world",
 		"c": true,
-	}, logLine)
+	}, lines[0])
+	require.Equal(LogLine{
+		"a": 2.0,
+		"b": "second line",
+		"c": false,
+	}, lines[1])
 }
