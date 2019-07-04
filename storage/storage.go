@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"io"
+	"os"
 )
 
 // LogLine is a single event from a logs collection.
@@ -58,5 +59,19 @@ func (r *collectionReader) readLogLines() ([]LogLine, error) {
 }
 
 func appendLogLine(path string, line LogLine) error {
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	jsonString, err := json.Marshal(line)
+	if err != nil {
+		return err
+	}
+
+	if _, err = file.Write(jsonString); err != nil {
+		return err
+	}
 	return nil
 }
