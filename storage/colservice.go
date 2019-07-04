@@ -1,8 +1,14 @@
 package storage
 
 import (
+	"errors"
 	"log"
+	"time"
 )
+
+const ServiceTimeout = 5 * time.Second
+
+var ErrTimeout = errors.New("Service Timeout")
 
 // CollectionService runs in a background goroutines and provides functions
 // to access a collections file (to read it, to search it and to write to it).
@@ -45,14 +51,38 @@ type colStopResponse struct{}
 
 // Stop sends the request to stop the CollectionService and blocks until
 // its complete.
-func (s *CollectionService) Stop() {
+func (s *CollectionService) Stop() error {
 	responseChan := make(chan colStopResponse)
 	req := colStopRequest{responseChan}
 	s.RequestChan <- req
-	<-responseChan
+
+	select {
+	case <-responseChan:
+		return nil
+	case <-time.After(ServiceTimeout):
+		return ErrTimeout
+	}
+}
+
+type colAppendRequest struct {
+	responseChan chan<- colAppendResponse
+	logLine      LogLine
+}
+
+type colAppendResponse struct {
+	err error
 }
 
 // Append sends the request to append the line to the collection.
 func (s *CollectionService) Append(logLine LogLine) error {
-	return nil
+	responseChan := make(chan colAppendResponse)
+	req := colAppendRequest{responseChan, logLine}
+	s.RequestChan <- req
+
+	select {
+	case resp := <-responseChan:
+		return resp.err
+	case <-time.After(ServiceTimeout):
+		return ErrTimeout
+	}
 }
